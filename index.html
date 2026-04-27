@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoFinderApi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f9f9f6;
+      --surface: #ffffff;
+      --surface2: #f3f3ef;
+      --border: #e6e6e0;
+      --border2: #d4d4cc;
+      --text: #18180f;
+      --text2: #5c5c52;
+      --text3: #a0a096;
+      --accent: #1e1e1a;
+      --accent2: #3a3a34;
+    }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: rgba(249,249,246,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+    }
+    .nav-logo-box {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+    }
+    .nav-logo-box svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text3);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+    .dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* HERO */
+    .hero {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3.5rem;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 1.2rem;
+    }
+    h1 em { font-style: normal; color: var(--text3); font-weight: 300; }
+    .hero-desc {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--text2);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* SEARCH */
+    .search-box {
+      position: relative;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 17px;
+      height: 17px;
+      pointer-events: none;
+      color: var(--text3);
+    }
+    #searchInput {
+      width: 100%;
+      height: 54px;
+      padding: 0 130px 0 48px;
+      border: 1.5px solid var(--border2);
+      border-radius: 16px;
+      background: var(--surface);
+      font-family: 'Sora', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #searchInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(30,30,26,0.07);
+    }
+    #searchInput::placeholder { color: var(--text3); font-weight: 300; }
+    .search-submit {
+      position: absolute;
+      right: 6px;
+      top: 7px;
+      height: 40px;
+      padding: 0 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .search-submit:hover { background: var(--accent2); }
+    .search-submit:active { transform: scale(0.97); }
+
+    /* REGIONS */
+    .controls {
+      max-width: 960px;
+      margin: 2.5rem auto 0;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .region-btn {
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface);
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .region-btn:hover { border-color: var(--border2); color: var(--text); }
+    .region-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .count-label {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 300;
+    }
+
+    /* GRID */
+    .grid-wrap {
+      max-width: 960px;
+      margin: 1.5rem auto 5rem;
+      padding: 0 2rem;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      animation: rise 0.35s ease both;
+    }
+    .card:nth-child(2) { animation-delay: 0.04s; }
+    .card:nth-child(3) { animation-delay: 0.08s; }
+    .card:nth-child(4) { animation-delay: 0.12s; }
+    .card:nth-child(5) { animation-delay: 0.16s; }
+    .card:nth-child(6) { animation-delay: 0.20s; }
+    @keyframes rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.07); }
+    .card-flag {
+      width: 100%;
+      height: 128px;
+      object-fit: cover;
+      background: var(--surface2);
+      display: block;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-body { padding: 13px 15px 15px; }
+    .card-name { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 3px; }
+    .card-sub { font-size: 11px; color: var(--text3); font-weight: 400; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 11px; }
+    .card-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text2);
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+
+    /* SKELETON */
+    .skel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .skel-flag { width: 100%; height: 128px; background: var(--surface2); animation: shimmer 1.2s infinite; }
+    .skel-body { padding: 13px 15px 15px; }
+    .skel-line {
+      border-radius: 4px;
+      background: var(--surface2);
+      animation: shimmer 1.2s infinite;
+      margin-bottom: 8px;
+    }
+    @keyframes shimmer {
+      0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6}
+    }
+
+    /* MODAL */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(24,24,15,0.35);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 540px;
+      width: 100%;
+      overflow: hidden;
+      animation: pop 0.25s ease;
+    }
+    @keyframes pop { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+    .modal-flag { width: 100%; height: 220px; object-fit: cover; background: var(--surface2); display: block; }
+    .modal-body { padding: 1.8rem; }
+    .modal-name { font-size: 26px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+    .modal-official { font-size: 13px; color: var(--text3); font-weight: 300; margin-bottom: 1.5rem; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.5rem; }
+    .modal-stat { background: var(--surface2); border-radius: 10px; padding: 12px 14px; }
+    .modal-stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3); margin-bottom: 4px; }
+    .modal-stat-val { font-size: 16px; font-weight: 600; letter-spacing: -0.4px; }
+    .modal-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .modal-row:last-of-type { border-bottom: none; }
+    .modal-row-label { color: var(--text3); font-weight: 400; }
+    .modal-row-val { font-weight: 500; text-align: right; max-width: 60%; }
+    .modal-close {
+      display: block;
+      width: 100%;
+      margin-top: 1.2rem;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: var(--accent2); }
+
+    /* EMPTY / ERROR */
+    .message {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 300;
+    }
+    .message strong { display: block; font-size: 18px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+
+    @media(max-width:600px) {
+      h1 { font-size: 32px; letter-spacing: -1.2px; }
+      .modal-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-box">
+      <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5"/><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/><ellipse cx="8" cy="8" rx="3" ry="5"/></svg>
+    </div>
+    GeoFinderApi
+  </div>
+  <div class="nav-right">
+    <div class="live-badge"><span class="dot"></span> Live</div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.5"/><path d="M6 3.5v3l1.5 1.5"/></svg>
+    restcountries.com
+  </div>
+  <h1>Explore every<br/><em>country on Earth</em></h1>
+  <p class="hero-desc">Search, filter, and inspect detailed data on all 250+ countries — population, region, currencies, languages, and more.</p>
+  <div class="search-box">
+    <svg class="search-icon" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="7.5" cy="7.5" r="5.5"/><line x1="11.5" y1="11.5" x2="15.5" y2="15.5"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search country name…" autocomplete="off" />
+    <button class="search-submit" onclick="doSearch()">Search</button>
+  </div>
+</section>
+
+<div class="controls">
+  <span class="region-btn active" onclick="filterRegion('', this)">All</span>
+  <span class="region-btn" onclick="filterRegion('Africa', this)">Africa</span>
+  <span class="region-btn" onclick="filterRegion('Americas', this)">Americas</span>
+  <span class="region-btn" onclick="filterRegion('Asia', this)">Asia</span>
+  <span class="region-btn" onclick="filterRegion('Europe', this)">Europe</span>
+  <span class="region-btn" onclick="filterRegion('Oceania', this)">Oceania</span>
+  <span class="region-btn" onclick="filterRegion('Antarctic', this)">Antarctic</span>
+  <span class="count-label" id="countLabel">—</span>
+</div>
+
+<div class="grid-wrap">
+  <div id="grid"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <img class="modal-flag" id="mFlag" src="" alt="" />
+    <div class="modal-body">
+      <div class="modal-name" id="mName"></div>
+      <div class="modal-official" id="mOfficial"></div>
+      <div class="modal-grid">
+        <div class="modal-stat"><div class="modal-stat-label">Population</div><div class="modal-stat-val" id="mPop"></div></div>
+        <div class="modal-stat"><div class="modal-stat-label">Area (km²)</div><div class="modal-stat-val" id="mArea"></div></div>
+      </div>
+      <div id="mRows"></div>
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allCountries = [];
+  let activeRegion = '';
+
+  async function loadAll() {
+    showSkeletons(12);
+    try {
+      const r = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,population,area,capital,currencies,languages,tld,cca2,timezones,continents');
+      allCountries = await r.json();
+      allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+      render(allCountries);
+    } catch(e) {
+      document.getElementById('grid').innerHTML = '<div class="message"><strong>Unable to load</strong>Could not reach restcountries.com. Please check your connection.</div>';
+    }
+  }
+
+  function showSkeletons(n) {
+    const g = document.getElementById('grid');
+    g.innerHTML = Array.from({length: n}, () => `
+      <div class="skel">
+        <div class="skel-flag"></div>
+        <div class="skel-body">
+          <div class="skel-line" style="width:60%;height:13px;"></div>
+          <div class="skel-line" style="width:40%;height:10px;"></div>
+          <div class="skel-line" style="width:80%;height:10px;margin-top:14px;"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  function render(list) {
+    const g = document.getElementById('grid');
+    document.getElementById('countLabel').textContent = `${list.length} countries`;
+    if (!list.length) {
+      g.innerHTML = '<div class="message"><strong>No results</strong>Try a different name or clear the filter.</div>';
+      return;
+    }
+    g.innerHTML = list.map(c => {
+      const cap = c.capital?.[0] || '—';
+      const pop = fmtNum(c.population);
+      const region = c.region || '—';
+      return `<div class="card" onclick='openModal(${JSON.stringify(c.cca2)})'>
+        <img class="card-flag" src="${c.flags?.svg || c.flags?.png}" alt="${c.name.common} flag" loading="lazy" />
+        <div class="card-body">
+          <div class="card-name">${c.name.common}</div>
+          <div class="card-sub">${region}</div>
+          <div class="card-chips">
+            <span class="chip">${pop} ppl</span>
+            <span class="chip">${cap}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    let list = activeRegion ? allCountries.filter(c => c.region === activeRegion) : allCountries;
+    if (q) list = list.filter(c => c.name.common.toLowerCase().includes(q) || (c.name.official || '').toLowerCase().includes(q));
+    render(list);
+  }
+
+  function filterRegion(region, el) {
+    activeRegion = region;
+    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    doSearch();
+  }
+
+  function openModal(cca2) {
+    const c = allCountries.find(x => x.cca2 === cca2);
+    if (!c) return;
+    document.getElementById('mFlag').src = c.flags?.svg || c.flags?.png;
+    document.getElementById('mFlag').alt = c.name.common;
+    document.getElementById('mName').textContent = c.name.common;
+    document.getElementById('mOfficial').textContent = c.name.official || '';
+    document.getElementById('mPop').textContent = fmtNum(c.population);
+    document.getElementById('mArea').textContent = c.area ? fmtNum(c.area) : '—';
+    const langs = c.languages ? Object.values(c.languages).join(', ') : '—';
+    const currencies = c.currencies ? Object.values(c.currencies).map(x => `${x.name} (${x.symbol || ''})`).join(', ') : '—';
+    const tld = c.tld?.join(', ') || '—';
+    const capital = c.capital?.join(', ') || '—';
+    const timezones = c.timezones?.slice(0,2).join(', ') + (c.timezones?.length > 2 ? ` +${c.timezones.length-2} more` : '');
+    const subregion = c.subregion || '—';
+    document.getElementById('mRows').innerHTML = [
+      ['Capital', capital],
+      ['Region', `${c.region} — ${subregion}`],
+      ['Languages', langs],
+      ['Currencies', currencies],
+      ['Top-level domain', tld],
+      ['Timezones', timezones],
+    ].map(([l,v]) => `<div class="modal-row"><span class="modal-row-label">${l}</span><span class="modal-row-val">${v}</span></div>`).join('');
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(e) {
+    if (e && e.target !== document.getElementById('overlay') && e.target.className !== 'modal-close') return;
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function fmtNum(n) {
+    if (!n && n !== 0) return '—';
+    if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+    return n.toString();
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+  loadAll();
+</script>
+</body>
+</html>
