@@ -394,115 +394,112 @@
 
 <script>
   let allCountries = [];
-  let activeRegion = '';
+let activeRegion = '';
 
-  async function loadAll() {
-    showSkeletons(12);
-    try {
-    const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://restcountries.com/v3.1/all'));
-    allCountries = await r.json();
-      allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
-      render(allCountries);
-    } catch(e) {
-      document.getElementById('grid').innerHTML = '<div class="message"><strong>Unable to load</strong>Could not reach restcountries.com. Please check your connection.</div>';
-    }
+async function loadAll() {
+  showSkeletons(12);
+  try {
+    const r = await fetch('https://countriesnow.space/api/v0.1/countries/info?returns=name,flag,population,capital,region,subregion,iso2,area,currency');
+    const json = await r.json();
+    allCountries = json.data;
+    allCountries.sort((a, b) => a.name.localeCompare(b.name));
+    render(allCountries);
+  } catch(e) {
+    document.getElementById('grid').innerHTML = '<div class="message"><strong>Unable to load</strong>Could not reach the API. Please refresh in a few minutes.</div>';
   }
+}
 
-  function showSkeletons(n) {
-    const g = document.getElementById('grid');
-    g.innerHTML = Array.from({length: n}, () => `
-      <div class="skel">
-        <div class="skel-flag"></div>
-        <div class="skel-body">
-          <div class="skel-line" style="width:60%;height:13px;"></div>
-          <div class="skel-line" style="width:40%;height:10px;"></div>
-          <div class="skel-line" style="width:80%;height:10px;margin-top:14px;"></div>
+function showSkeletons(n) {
+  const g = document.getElementById('grid');
+  g.innerHTML = Array.from({length: n}, () => `
+    <div class="skel">
+      <div class="skel-flag"></div>
+      <div class="skel-body">
+        <div class="skel-line" style="width:60%;height:13px;"></div>
+        <div class="skel-line" style="width:40%;height:10px;"></div>
+        <div class="skel-line" style="width:80%;height:10px;margin-top:14px;"></div>
+      </div>
+    </div>`).join('');
+}
+
+function render(list) {
+  const g = document.getElementById('grid');
+  document.getElementById('countLabel').textContent = `${list.length} countries`;
+  if (!list.length) {
+    g.innerHTML = '<div class="message"><strong>No results</strong>Try a different name or clear the filter.</div>';
+    return;
+  }
+  g.innerHTML = list.map(c => {
+    const cap = c.capital || '—';
+    const pop = fmtNum(c.population);
+    const region = c.region || '—';
+    return `<div class="card" onclick='openModal(${JSON.stringify(c.iso2)})'>
+      <img class="card-flag" src="${c.flag}" alt="${c.name} flag" loading="lazy" />
+      <div class="card-body">
+        <div class="card-name">${c.name}</div>
+        <div class="card-sub">${region}</div>
+        <div class="card-chips">
+          <span class="chip">${pop} ppl</span>
+          <span class="chip">${cap}</span>
         </div>
-      </div>`).join('');
-  }
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  function render(list) {
-    const g = document.getElementById('grid');
-    document.getElementById('countLabel').textContent = `${list.length} countries`;
-    if (!list.length) {
-      g.innerHTML = '<div class="message"><strong>No results</strong>Try a different name or clear the filter.</div>';
-      return;
-    }
-    g.innerHTML = list.map(c => {
-      const cap = c.capital?.[0] || '—';
-      const pop = fmtNum(c.population);
-      const region = c.region || '—';
-      return `<div class="card" onclick='openModal(${JSON.stringify(c.cca2)})'>
-        <img class="card-flag" src="${c.flags?.svg || c.flags?.png}" alt="${c.name.common} flag" loading="lazy" />
-        <div class="card-body">
-          <div class="card-name">${c.name.common}</div>
-          <div class="card-sub">${region}</div>
-          <div class="card-chips">
-            <span class="chip">${pop} ppl</span>
-            <span class="chip">${cap}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = activeRegion ? allCountries.filter(c => c.region === activeRegion) : allCountries;
+  if (q) list = list.filter(c => c.name.toLowerCase().includes(q));
+  render(list);
+}
 
-  function doSearch() {
-    const q = document.getElementById('searchInput').value.trim().toLowerCase();
-    let list = activeRegion ? allCountries.filter(c => c.region === activeRegion) : allCountries;
-    if (q) list = list.filter(c => c.name.common.toLowerCase().includes(q) || (c.name.official || '').toLowerCase().includes(q));
-    render(list);
-  }
+function filterRegion(region, el) {
+  activeRegion = region;
+  document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  doSearch();
+}
 
-  function filterRegion(region, el) {
-    activeRegion = region;
-    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    doSearch();
-  }
+function openModal(iso2) {
+  const c = allCountries.find(x => x.iso2 === iso2);
+  if (!c) return;
+  document.getElementById('mFlag').src = c.flag;
+  document.getElementById('mFlag').alt = c.name;
+  document.getElementById('mName').textContent = c.name;
+  document.getElementById('mOfficial').textContent = '';
+  document.getElementById('mPop').textContent = fmtNum(c.population);
+  document.getElementById('mArea').textContent = c.area ? fmtNum(c.area) : '—';
+  const capital = c.capital || '—';
+  const region = c.region || '—';
+  const subregion = c.subregion || '—';
+  const currency = c.currency || '—';
+  document.getElementById('mRows').innerHTML = [
+    ['Capital', capital],
+    ['Region', `${region} — ${subregion}`],
+    ['Currency', currency],
+  ].map(([l,v]) => `<div class="modal-row"><span class="modal-row-label">${l}</span><span class="modal-row-val">${v}</span></div>`).join('');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
 
-  function openModal(cca2) {
-    const c = allCountries.find(x => x.cca2 === cca2);
-    if (!c) return;
-    document.getElementById('mFlag').src = c.flags?.svg || c.flags?.png;
-    document.getElementById('mFlag').alt = c.name.common;
-    document.getElementById('mName').textContent = c.name.common;
-    document.getElementById('mOfficial').textContent = c.name.official || '';
-    document.getElementById('mPop').textContent = fmtNum(c.population);
-    document.getElementById('mArea').textContent = c.area ? fmtNum(c.area) : '—';
-    const langs = c.languages ? Object.values(c.languages).join(', ') : '—';
-    const currencies = c.currencies ? Object.values(c.currencies).map(x => `${x.name} (${x.symbol || ''})`).join(', ') : '—';
-    const tld = c.tld?.join(', ') || '—';
-    const capital = c.capital?.join(', ') || '—';
-    const timezones = '—';
-    document.getElementById('mRows').innerHTML = [
-      ['Capital', capital],
-      ['Region', `${c.region} — ${c.subregion}`],
-      ['Languages', langs],
-      ['Currencies', currencies],
-      ['Top-level domain', tld],
-      ['Timezones', timezones],
-    ].map(([l,v]) => `<div class="modal-row"><span class="modal-row-label">${l}</span><span class="modal-row-val">${v}</span></div>`).join('');
-    document.getElementById('overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('overlay') && e.target.className !== 'modal-close') return;
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
-  function closeModal(e) {
-    if (e && e.target !== document.getElementById('overlay') && e.target.className !== 'modal-close') return;
-    document.getElementById('overlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
+function fmtNum(n) {
+  if (!n && n !== 0) return '—';
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return n.toString();
+}
 
-  function fmtNum(n) {
-    if (!n && n !== 0) return '—';
-    if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-    if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
-    return n.toString();
-  }
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
-  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-
-  loadAll();
+loadAll();
 </script>
 </body>
 </html>
