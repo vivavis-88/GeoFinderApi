@@ -399,8 +399,8 @@
   async function loadAll() {
     showSkeletons(12);
     try {
-     const API = 'https://restcountries.com/v3.1/all';
-      allCountries = await r.json();
+    const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://restcountries.com/v3.1/all'));
+    allCountries = await r.json();
       allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
       render(allCountries);
     } catch(e) {
