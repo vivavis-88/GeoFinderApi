@@ -399,7 +399,7 @@
   async function loadAll() {
     showSkeletons(12);
     try {
-      const API = 'https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,population,area,capital,currencies,languages,tld,cca2,timezones';
+      const API = 'https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,population,area,capital,currencies,languages,tld,cca2';
       const r = await fetch(API);
       allCountries = await r.json();
       allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
@@ -474,8 +474,7 @@
     const currencies = c.currencies ? Object.values(c.currencies).map(x => `${x.name} (${x.symbol || ''})`).join(', ') : '—';
     const tld = c.tld?.join(', ') || '—';
     const capital = c.capital?.join(', ') || '—';
-    const timezones = c.timezones?.slice(0,2).join(', ') + (c.timezones?.length > 2 ? ` +${c.timezones.length-2} more` : '');
-    const subregion = c.subregion || '—';
+    const timezones = '—';
     document.getElementById('mRows').innerHTML = [
       ['Capital', capital],
       ['Region', `${c.region} — ${subregion}`],
