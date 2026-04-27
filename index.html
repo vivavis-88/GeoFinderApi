@@ -60,11 +60,7 @@
       place-items: center;
     }
     .nav-logo-box svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .nav-right { display: flex; align-items: center; gap: 6px; }
     .live-badge {
       display: flex;
       align-items: center;
@@ -258,9 +254,7 @@
       animation: shimmer 1.2s infinite;
       margin-bottom: 8px;
     }
-    @keyframes shimmer {
-      0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6}
-    }
+    @keyframes shimmer { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
 
     /* MODAL */
     .overlay {
@@ -287,12 +281,7 @@
     @keyframes pop { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
     .modal-flag { width: 100%; height: 220px; object-fit: cover; background: var(--surface2); display: block; }
     .modal-body { padding: 1.8rem; }
-    .modal-name { font-size: 26px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
-    .modal-official { font-size: 13px; color: var(--text3); font-weight: 300; margin-bottom: 1.5rem; }
-    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.5rem; }
-    .modal-stat { background: var(--surface2); border-radius: 10px; padding: 12px 14px; }
-    .modal-stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3); margin-bottom: 4px; }
-    .modal-stat-val { font-size: 16px; font-weight: 600; letter-spacing: -0.4px; }
+    .modal-name { font-size: 26px; font-weight: 700; letter-spacing: -1px; margin-bottom: 1.5rem; }
     .modal-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
     .modal-row:last-of-type { border-bottom: none; }
     .modal-row-label { color: var(--text3); font-weight: 400; }
@@ -327,7 +316,6 @@
 
     @media(max-width:600px) {
       h1 { font-size: 32px; letter-spacing: -1.2px; }
-      .modal-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -348,10 +336,10 @@
 <section class="hero">
   <div class="hero-eyebrow">
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.5"/><path d="M6 3.5v3l1.5 1.5"/></svg>
-    restcountries.com
+    countriesnow.space
   </div>
   <h1>Explore every<br/><em>country on Earth</em></h1>
-  <p class="hero-desc">Search, filter, and inspect detailed data on all 250+ countries — population, region, currencies, languages, and more.</p>
+  <p class="hero-desc">Search and inspect data on all countries — capitals, currencies, flags, and more.</p>
   <div class="search-box">
     <svg class="search-icon" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
       <circle cx="7.5" cy="7.5" r="5.5"/><line x1="11.5" y1="11.5" x2="15.5" y2="15.5"/>
@@ -362,13 +350,6 @@
 </section>
 
 <div class="controls">
-  <span class="region-btn active" onclick="filterRegion('', this)">All</span>
-  <span class="region-btn" onclick="filterRegion('Africa', this)">Africa</span>
-  <span class="region-btn" onclick="filterRegion('Americas', this)">Americas</span>
-  <span class="region-btn" onclick="filterRegion('Asia', this)">Asia</span>
-  <span class="region-btn" onclick="filterRegion('Europe', this)">Europe</span>
-  <span class="region-btn" onclick="filterRegion('Oceania', this)">Oceania</span>
-  <span class="region-btn" onclick="filterRegion('Antarctic', this)">Antarctic</span>
   <span class="count-label" id="countLabel">—</span>
 </div>
 
@@ -381,9 +362,6 @@
     <img class="modal-flag" id="mFlag" src="" alt="" />
     <div class="modal-body">
       <div class="modal-name" id="mName"></div>
-      <div class="modal-official" id="mOfficial"></div>
-      <div class="modal-grid">
-      </div>
       <div id="mRows"></div>
       <button class="modal-close" onclick="closeModal()">Close</button>
     </div>
@@ -391,114 +369,90 @@
 </div>
 
 <script>
-let allCountries = [];
-let activeRegion = '';
+  let allCountries = [];
 
-async function loadAll() {
-  showSkeletons(12);
-  try {
-    const r = await fetch('https://countriesnow.space/api/v0.1/countries/positions');
-    const json = await r.json();
-    allCountries = json.data;
-    console.log(allCountries[0]);
-    allCountries.sort((a, b) => a.name.localeCompare(b.name));
-    render(allCountries);
-  } catch(e) {
-    document.getElementById('grid').innerHTML = '<div class="message"><strong>Unable to load</strong>Could not reach the API. Please refresh in a few minutes.</div>';
+  async function loadAll() {
+    showSkeletons(12);
+    try {
+      const r = await fetch('https://countriesnow.space/api/v0.1/countries/info?returns=name,flag,capital,currency,iso2');
+      const json = await r.json();
+      allCountries = json.data;
+      allCountries.sort((a, b) => a.name.localeCompare(b.name));
+      render(allCountries);
+    } catch(e) {
+      document.getElementById('grid').innerHTML = '<div class="message"><strong>Unable to load</strong>Could not reach the API. Please refresh in a few minutes.</div>';
+    }
   }
-}
 
-function showSkeletons(n) {
-  const g = document.getElementById('grid');
-  g.innerHTML = Array.from({length: n}, () => `
-    <div class="skel">
-      <div class="skel-flag"></div>
-      <div class="skel-body">
-        <div class="skel-line" style="width:60%;height:13px;"></div>
-        <div class="skel-line" style="width:40%;height:10px;"></div>
-        <div class="skel-line" style="width:80%;height:10px;margin-top:14px;"></div>
-      </div>
-    </div>`).join('');
-}
-
-function render(list) {
-  const g = document.getElementById('grid');
-  document.getElementById('countLabel').textContent = `${list.length} countries`;
-  if (!list.length) {
-    g.innerHTML = '<div class="message"><strong>No results</strong>Try a different name or clear the filter.</div>';
-    return;
-  }
-  g.innerHTML = list.map(c => {
-    const cap = c.capital || '—';
-    const pop = fmtNum(c.population);
-    const region = c.region || '—';
-    return `<div class="card" onclick='openModal(${JSON.stringify(c.iso2)})'>
-      <img class="card-flag" src="${c.flag}" alt="${c.name} flag" loading="lazy" />
-      <div class="card-body">
-        <div class="card-name">${c.name}</div>
-        <div class="card-sub">${region}</div>
-        <div class="card-chips">
-          <span class="chip">${pop} ppl</span>
-          <span class="chip">${cap}</span>
+  function showSkeletons(n) {
+    const g = document.getElementById('grid');
+    g.innerHTML = Array.from({length: n}, () => `
+      <div class="skel">
+        <div class="skel-flag"></div>
+        <div class="skel-body">
+          <div class="skel-line" style="width:60%;height:13px;"></div>
+          <div class="skel-line" style="width:40%;height:10px;"></div>
+          <div class="skel-line" style="width:80%;height:10px;margin-top:14px;"></div>
         </div>
-      </div>
-    </div>`;
-  }).join('');
-}
+      </div>`).join('');
+  }
 
-function doSearch() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  let list = activeRegion ? allCountries.filter(c => c.region === activeRegion) : allCountries;
-  if (q) list = list.filter(c => c.name.toLowerCase().includes(q));
-  render(list);
-}
+  function render(list) {
+    const g = document.getElementById('grid');
+    document.getElementById('countLabel').textContent = `${list.length} countries`;
+    if (!list.length) {
+      g.innerHTML = '<div class="message"><strong>No results</strong>Try a different name or clear the filter.</div>';
+      return;
+    }
+    g.innerHTML = list.map(c => {
+      const cap = c.capital || '—';
+      const currency = c.currency || '—';
+      return `<div class="card" onclick='openModal(${JSON.stringify(c.iso2)})'>
+        <img class="card-flag" src="${c.flag}" alt="${c.name} flag" loading="lazy" onerror="this.style.background='var(--surface2)'" />
+        <div class="card-body">
+          <div class="card-name">${c.name}</div>
+          <div class="card-sub">${c.iso2 || ''}</div>
+          <div class="card-chips">
+            <span class="chip">${cap}</span>
+            <span class="chip">${currency}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
-function filterRegion(region, el) {
-  activeRegion = region;
-  document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  doSearch();
-}
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const list = q ? allCountries.filter(c => c.name.toLowerCase().includes(q)) : allCountries;
+    render(list);
+  }
 
-function openModal(iso2) {
-  const c = allCountries.find(x => x.iso2 === iso2);
-  if (!c) return;
-  document.getElementById('mFlag').src = c.flag;
-  document.getElementById('mFlag').alt = c.name;
-  document.getElementById('mName').textContent = c.name;
-  document.getElementById('mOfficial').textContent = '';
-  document.getElementById('mPop').textContent = fmtNum(c.population);
-  document.getElementById('mArea').textContent = c.area ? fmtNum(c.area) : '—';
-  const capital = c.capital || '—';
-  const region = c.region || '—';
-  const subregion = c.subregion || '—';
-  const currency = c.currency || '—';
-  document.getElementById('mRows').innerHTML = [
-    ['Capital', capital],
-    ['Region', `${region} — ${subregion}`],
-    ['Currency', currency],
-  ].map(([l,v]) => `<div class="modal-row"><span class="modal-row-label">${l}</span><span class="modal-row-val">${v}</span></div>`).join('');
-  document.getElementById('overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
+  function openModal(iso2) {
+    const c = allCountries.find(x => x.iso2 === iso2);
+    if (!c) return;
+    document.getElementById('mFlag').src = c.flag;
+    document.getElementById('mFlag').alt = c.name;
+    document.getElementById('mName').textContent = c.name;
+    const capital = c.capital || '—';
+    const currency = c.currency || '—';
+    document.getElementById('mRows').innerHTML = [
+      ['Capital', capital],
+      ['Currency', currency],
+      ['Country Code', c.iso2 || '—'],
+    ].map(([l,v]) => `<div class="modal-row"><span class="modal-row-label">${l}</span><span class="modal-row-val">${v}</span></div>`).join('');
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
 
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('overlay') && e.target.className !== 'modal-close') return;
-  document.getElementById('overlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
+  function closeModal(e) {
+    if (e && e.target !== document.getElementById('overlay') && e.target.className !== 'modal-close') return;
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
 
-function fmtNum(n) {
-  if (!n && n !== 0) return '—';
-  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
-  return n.toString();
-}
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
-document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-
-loadAll();
+  loadAll();
 </script>
 </body>
 </html>
