@@ -383,8 +383,6 @@
       <div class="modal-name" id="mName"></div>
       <div class="modal-official" id="mOfficial"></div>
       <div class="modal-grid">
-        <div class="modal-stat"><div class="modal-stat-label">Population</div><div class="modal-stat-val" id="mPop"></div></div>
-        <div class="modal-stat"><div class="modal-stat-label">Area (km²)</div><div class="modal-stat-val" id="mArea"></div></div>
       </div>
       <div id="mRows"></div>
       <button class="modal-close" onclick="closeModal()">Close</button>
@@ -399,7 +397,7 @@ let activeRegion = '';
 async function loadAll() {
   showSkeletons(12);
   try {
-    const r = await fetch('https://countriesnow.space/api/v0.1/countries/info?returns=name,flag,population,capital,region,subregion,iso2,area,currency');
+    const r = await fetch('https://countriesnow.space/api/v0.1/countries/positions');
     const json = await r.json();
     allCountries = json.data;
     console.log(allCountries[0]);
