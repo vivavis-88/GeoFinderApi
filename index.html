@@ -398,7 +398,8 @@
   async function loadAll() {
     showSkeletons(12);
     try {
-    const r = await fetch('https://corsproxy.io/?url=https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,population,area,capital,currencies,languages,tld,cca2,timezones,continents');
+      const API = 'https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,population,area,capital,currencies,languages,tld,cca2,timezones,continents';
+      const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(API));
       allCountries = await r.json();
       allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
       render(allCountries);
