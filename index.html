@@ -402,6 +402,7 @@ async function loadAll() {
     const r = await fetch('https://countriesnow.space/api/v0.1/countries/info?returns=name,flag,population,capital,region,subregion,iso2,area,currency');
     const json = await r.json();
     allCountries = json.data;
+    console.log(allCountries[0]);
     allCountries.sort((a, b) => a.name.localeCompare(b.name));
     render(allCountries);
   } catch(e) {
